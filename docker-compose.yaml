@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./biblio-backend
+      dockerfile: ../docker/backend/Dockerfile
+    container_name: laravel_backend
+    working_dir: /var/www
+    volumes:
+      - ./biblio-backend:/var/www
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: laravel_nginx
+    ports:
+      - "8000:80"
+    volumes:
+      - ./biblio-backend:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./biblio-frontend
+      dockerfile: ../docker/frontend/Dockerfile
+    container_name: react_frontend
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./biblio-frontend:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bibliotheque
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@dit.com
+      PGADMIN_DEFAULT_PASSWORD: admin123vas
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
