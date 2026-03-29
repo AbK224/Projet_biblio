@@ -141,10 +141,11 @@ Avant de lancer le projet, assurez-vous d’avoir :
 
 
 ```bash
+créer un dossier sur "dossier"
+git clone https://github.com/AbK224/Projet_biblio.git
 
-git clone https://github.com/AbK224/bibliotheque.git
+cd nom_du_dossier_créé
 
-cd bibliotheque
 
 ```
 
